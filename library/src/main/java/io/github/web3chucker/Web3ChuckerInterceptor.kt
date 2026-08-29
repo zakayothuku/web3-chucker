@@ -19,16 +19,21 @@ class Web3ChuckerInterceptor(
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request()
 
-        if (!enabled || !isJsonRpcRequest(request)) {
+        if (!enabled || !looksLikeJsonRpcCandidate(request)) {
             return chain.proceed(request)
         }
 
         val requestBodyString = readRequestBody(request)
         val rpcPayload = parseJsonRpcRequest(requestBodyString)
 
-        val method = rpcPayload?.first ?: "HTTP ${request.method}"
-        val paramsJson = rpcPayload?.second ?: "[]"
-        val rpcId = rpcPayload?.third ?: "1"
+        // The heuristics above are necessarily loose (content-type/path matching); only a
+        // request whose body actually declares a JSON-RPC "method" is logged, so unrelated
+        // JSON APIs sharing a content-type or an "rpc"-containing path aren't misrepresented.
+        if (rpcPayload == null) {
+            return chain.proceed(request)
+        }
+
+        val (method, paramsJson, rpcId) = rpcPayload
 
         val decodedCall = RpcTransactionDecoder.decode(method, paramsJson)
 
@@ -83,9 +88,18 @@ class Web3ChuckerInterceptor(
         return response.newBuilder().body(newBody).build()
     }
 
-    private fun isJsonRpcRequest(request: Request): Boolean {
-        val contentType = request.body?.contentType()?.toString() ?: ""
-        return request.method == "POST" && (contentType.contains("json") || request.url.encodedPath.contains("rpc"))
+    /**
+     * Cheap pre-filter to decide whether it's worth reading the body at all. This is
+     * intentionally loose (content-type prefix OR a path segment literally named "rpc")
+     * — [parseJsonRpcRequest] performs the authoritative check by requiring a "method"
+     * field, so false positives here don't result in unrelated traffic being logged.
+     */
+    private fun looksLikeJsonRpcCandidate(request: Request): Boolean {
+        if (request.method != "POST") return false
+        val contentType = request.body?.contentType()?.toString()?.lowercase() ?: ""
+        val isJsonContentType = contentType.startsWith("application/json") || contentType.endsWith("+json")
+        val hasRpcPathSegment = request.url.pathSegments.any { it.equals("rpc", ignoreCase = true) }
+        return isJsonContentType || hasRpcPathSegment
     }
 
     private fun readRequestBody(request: Request): String {
@@ -102,7 +116,10 @@ class Web3ChuckerInterceptor(
     private fun parseJsonRpcRequest(jsonStr: String): Triple<String, String, String>? {
         return try {
             val json = JSONObject(jsonStr)
-            val method = json.optString("method", "unknown_method")
+            // A JSON-RPC 2.0 request MUST declare "method"; absence means this POST, despite
+            // matching the loose candidate heuristics, isn't actually a JSON-RPC call.
+            if (!json.has("method")) return null
+            val method = json.getString("method")
             val params = json.optJSONArray("params")?.toString()
                 ?: json.optJSONObject("params")?.toString()
                 ?: "[]"
