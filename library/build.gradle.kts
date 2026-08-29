@@ -60,7 +60,12 @@ dependencies {
     // Unit Testing
     testImplementation(libs.junit)
     testImplementation(libs.mockwebserver)
+    // Production code uses org.json.JSONObject/JSONArray, which are stubbed (throw
+    // RuntimeException("Stub!")) on the plain-JVM unit test classpath by default.
+    // Pulling in a real implementation here lets unit tests actually exercise JSON parsing.
+    testImplementation("org.json:json:20231013")
 }
+
 
 afterEvaluate {
     publishing {
