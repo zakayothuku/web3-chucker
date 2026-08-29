@@ -41,14 +41,16 @@ class RpcTransactionDecoder(
                 paramsMap["Target Contract"] = toAddress
                 paramsMap["ETH Value"] = parseHexToDecimal(valueHex)
 
+                // Decode every ABI-encoded 32-byte word positionally. Note: dynamic types
+                // (e.g. address[], bytes, string) are encoded as an offset pointer in their
+                // word slot rather than the inline value, so those are surfaced as raw hex.
                 val payloadHex = dataHex.substring(10)
-                if (payloadHex.length >= 64 && sig.params.isNotEmpty()) {
-                    val p1 = sig.params[0]
-                    paramsMap[p1.name] = formatParam(payloadHex.substring(0, 64), p1.type)
-                }
-                if (payloadHex.length >= 128 && sig.params.size >= 2) {
-                    val p2 = sig.params[1]
-                    paramsMap[p2.name] = formatParam(payloadHex.substring(64, 128), p2.type)
+                sig.params.forEachIndexed { index, param ->
+                    val start = index * 64
+                    val end = start + 64
+                    if (payloadHex.length >= end) {
+                        paramsMap[param.name] = formatParam(payloadHex.substring(start, end), param.type)
+                    }
                 }
 
                 val summary = "${sig.name}(${paramsMap.entries.joinToString { "${it.key}: ${it.value}" }})"
