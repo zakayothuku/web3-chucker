@@ -71,9 +71,27 @@ class Web3ChuckerInterceptor(
             throw e
         }
 
+        // Reading the body is a second point of failure independent of chain.proceed()
+        // succeeding (e.g. the connection can drop mid-stream after headers arrive), so it
+        // gets its own try/catch: otherwise a failure here would throw uncaught, leaving the
+        // transaction stuck at RpcStatus.PENDING forever with no recorded error.
+        val responseBodyString: String
+        try {
+            responseBodyString = response.body?.string() ?: ""
+        } catch (e: Exception) {
+            val duration = System.currentTimeMillis() - startTime
+            Web3ChuckerRepository.updateTransaction(initialTx.id) { tx ->
+                tx.copy(
+                    responseCode = response.code,
+                    durationMs = duration,
+                    status = RpcStatus.ERROR,
+                    errorMessage = e.localizedMessage ?: "Failed to read response body"
+                )
+            }
+            throw e
+        }
+
         val duration = System.currentTimeMillis() - startTime
-        val responseBody = response.body
-        val responseBodyString = responseBody?.string() ?: ""
 
         val (status, errorMsg, revertReason) = parseJsonRpcResponse(response.code, responseBodyString)
 
@@ -90,7 +108,7 @@ class Web3ChuckerInterceptor(
         }
 
         // Re-create response body as it can only be consumed once
-        val newBody = responseBodyString.toResponseBody(responseBody?.contentType())
+        val newBody = responseBodyString.toResponseBody(response.body?.contentType())
         return response.newBuilder().body(newBody).build()
     }
 
