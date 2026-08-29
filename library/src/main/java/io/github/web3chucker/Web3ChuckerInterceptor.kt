@@ -11,8 +11,14 @@ import org.json.JSONObject
 import java.io.IOException
 import java.nio.charset.StandardCharsets
 
+/**
+ * [enabled] defaults to `false` so this interceptor is safe-by-default: it must be
+ * explicitly opted into (e.g. `Web3ChuckerInterceptor(enabled = BuildConfig.DEBUG)`)
+ * rather than silently logging RPC traffic, headers, and wallet data in production
+ * if a consumer forgets to gate it.
+ */
 class Web3ChuckerInterceptor(
-    private val enabled: Boolean = true
+    private val enabled: Boolean = false
 ) : Interceptor {
 
     @Throws(IOException::class)
