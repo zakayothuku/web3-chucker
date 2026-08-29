@@ -33,12 +33,12 @@ class Web3ChuckerInterceptor(
         val decodedCall = RpcTransactionDecoder.decode(method, paramsJson)
 
         val initialTx = Web3RpcTransaction(
-            requestUrl = request.url.toString(),
+            requestUrl = SensitiveDataRedactor.redactUrl(request.url),
             method = method,
             rawParamsJson = paramsJson,
             rpcId = rpcId,
             decodedCall = decodedCall,
-            requestHeaders = request.headers.toMap(),
+            requestHeaders = SensitiveDataRedactor.redactHeaders(request.headers.toMap()),
             status = RpcStatus.PENDING
         )
 
@@ -69,7 +69,7 @@ class Web3ChuckerInterceptor(
         Web3ChuckerRepository.updateTransaction(initialTx.id) { tx ->
             tx.copy(
                 responseCode = response.code,
-                responseHeaders = response.headers.toMap(),
+                responseHeaders = SensitiveDataRedactor.redactHeaders(response.headers.toMap()),
                 rawResponseJson = responseBodyString,
                 durationMs = duration,
                 status = status,
