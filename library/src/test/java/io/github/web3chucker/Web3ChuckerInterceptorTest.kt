@@ -3,6 +3,7 @@ package io.github.web3chucker
 import io.github.web3chucker.model.RpcStatus
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -49,7 +50,7 @@ class Web3ChuckerInterceptorTest {
         val jsonRequest = """{"jsonrpc":"2.0","method":"eth_blockNumber","params":[],"id":1}"""
         val request = Request.Builder()
             .url(mockWebServer.url("/rpc"))
-            .post(jsonRequest.toRequestBody(okhttp3.MediaType.get("application/json")))
+            .post(jsonRequest.toRequestBody("application/json".toMediaType()))
             .build()
 
         val response = client.newCall(request).execute()
@@ -82,7 +83,7 @@ class Web3ChuckerInterceptorTest {
         val jsonRequest = """{"jsonrpc":"2.0","method":"eth_sendTransaction","params":[],"id":1}"""
         val request = Request.Builder()
             .url(mockWebServer.url("/rpc"))
-            .post(jsonRequest.toRequestBody(okhttp3.MediaType.get("application/json")))
+            .post(jsonRequest.toRequestBody("application/json".toMediaType()))
             .build()
 
         client.newCall(request).execute().close()
@@ -107,7 +108,7 @@ class Web3ChuckerInterceptorTest {
         val jsonRequest = """{"jsonrpc":"2.0","method":"eth_call","params":[],"id":1}"""
         val request = Request.Builder()
             .url(mockWebServer.url("/rpc"))
-            .post(jsonRequest.toRequestBody(okhttp3.MediaType.get("application/json")))
+            .post(jsonRequest.toRequestBody("application/json".toMediaType()))
             .build()
 
         client.newCall(request).execute().close()

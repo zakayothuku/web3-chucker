@@ -10,7 +10,7 @@ class RpcTransactionDecoderTest {
     fun `test EVM transfer function selector decoding`() {
         // 0xa9059cbb = transfer(address,uint256)
         val toAddrParam = "00000000000000000000000071c7656ec7ab88b098defb751b7401b5f6d8976f"
-        val amountParam = "000000000000000000000000000000000000000000000005f5e100" // 100,000,000 in hex (100 USDC with 6 decimals)
+        val amountParam = "0000000000000000000000000000000000000000000000000000000005f5e100" // 100,000,000 in hex (100 USDC with 6 decimals)
         val dataHex = "0xa9059cbb$toAddrParam$amountParam"
 
         val rawParamsJson = """
