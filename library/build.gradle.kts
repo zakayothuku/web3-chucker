@@ -75,7 +75,9 @@ afterEvaluate {
 
                 groupId = "io.github.zakayothuku"
                 artifactId = "web3-chucker"
-                version = "1.0.0"
+                // Overridable via `-PVERSION_NAME=x.y.z` (used by the release workflow, which
+                // derives it from the pushed git tag). Defaults to gradle.properties for local builds.
+                version = (project.findProperty("VERSION_NAME") as String?) ?: "1.0.0"
 
                 pom {
                     name.set("web3-chucker")
