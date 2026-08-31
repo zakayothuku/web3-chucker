@@ -28,11 +28,23 @@
 
 ### 1. Add Dependency
 
+Add Maven Central to your `settings.gradle.kts`:
+
+```kotlin
+repositories {
+    mavenCentral()
+}
+```
+
 Add the dependency to your `:app` or `:feature` `build.gradle.kts`:
 
 ```kotlin
 dependencies {
-    implementation("io.github.zakayothuku:web3-chucker:1.0.0")
+    // Debug builds: full JSON-RPC inspector & overlay UI
+    debugImplementation("io.github.zakayothuku:web3-chucker:1.0.0")
+    
+    // Release builds: zero-overhead no-op artifact
+    releaseImplementation("io.github.zakayothuku:web3-chucker-noop:1.0.0")
 }
 ```
 
