@@ -2,9 +2,9 @@ name: Android CI & Library Build
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "develop" ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ "main", "master", "develop" ]
 
 jobs:
   build:
@@ -31,4 +31,4 @@ jobs:
         run: ./gradlew assembleDebug --no-daemon
 
       - name: Verify Maven Publication Bundle
-        run: ./gradlew :library:generatePomFileForReleasePublication --no-daemon
+        run: ./gradlew :library:generatePomFileForMavenPublication --no-daemon

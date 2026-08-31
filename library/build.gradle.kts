@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("maven-publish")
+    alias(libs.plugins.vanniktech.mavenPublish)
 }
 
 android {
@@ -38,12 +38,6 @@ android {
     buildFeatures {
         compose = true
     }
-
-    publishing {
-        singleVariant("release") {
-            withSourcesJar()
-        }
-    }
 }
 
 dependencies {
@@ -66,44 +60,52 @@ dependencies {
     testImplementation("org.json:json:20231013")
 }
 
+mavenPublishing {
+    publishToMavenCentral(com.vanniktech.maven.publish.SonatypeHost.CENTRAL_PORTAL)
+    signAllPublications()
 
-afterEvaluate {
-    publishing {
-        publications {
-            create<MavenPublication>("release") {
-                from(components["release"])
+    coordinates(
+        groupId = "io.github.zakayothuku",
+        artifactId = "web3-chucker",
+        version = (project.findProperty("VERSION_NAME") as String?) ?: "1.0.0"
+    )
 
-                groupId = "io.github.zakayothuku"
-                artifactId = "web3-chucker"
-                version = "1.0.0"
+    pom {
+        name.set("web3-chucker")
+        description.set("OkHttp JSON-RPC Interceptor & Compose Debug UI Overlay for Android Web3 Applications.")
+        url.set("https://github.com/zakayothuku/web3-chucker")
 
-                pom {
-                    name.set("web3-chucker")
-                    description.set("OkHttp JSON-RPC Interceptor & Compose Debug UI Overlay for Android Web3 Applications.")
-                    url.set("https://github.com/zakayothuku/web3-chucker")
-
-                    licenses {
-                        license {
-                            name.set("MIT License")
-                            url.set("https://opensource.org/licenses/MIT")
-                        }
-                    }
-
-                    developers {
-                        developer {
-                            id.set("zakayothuku")
-                            name.set("Zakayo Thuku")
-                            email.set("zakayothuku@gmail.com")
-                        }
-                    }
-
-                    scm {
-                        connection.set("scm:git:github.com/zakayothuku/web3-chucker.git")
-                        developerConnection.set("scm:git:ssh://github.com/zakayothuku/web3-chucker.git")
-                        url.set("https://github.com/zakayothuku/web3-chucker")
-                    }
-                }
+        licenses {
+            license {
+                name.set("MIT License")
+                url.set("https://opensource.org/licenses/MIT")
             }
+        }
+
+        developers {
+            developer {
+                id.set("zakayothuku")
+                name.set("Zakayo Thuku")
+                email.set("zakayothuku@gmail.com")
+            }
+        }
+
+        scm {
+            connection.set("scm:git:github.com/zakayothuku/web3-chucker.git")
+            developerConnection.set("scm:git:ssh://github.com/zakayothuku/web3-chucker.git")
+            url.set("https://github.com/zakayothuku/web3-chucker")
         }
     }
 }
+
+plugins.withId("signing") {
+    configure<SigningExtension> {
+        val hasKey = project.hasProperty("signingInMemoryKey") ||
+            project.hasProperty("signing.keyId") ||
+            project.hasProperty("signing.secretKeyRingFile") ||
+            System.getenv("ORG_GRADLE_PROJECT_signingInMemoryKey") != null
+        isRequired = hasKey
+    }
+}
+
+
