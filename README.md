@@ -1,5 +1,7 @@
 # 🌐 web3-chucker
 
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.zakayothuku/web3-chucker.svg?label=Maven%20Central&color=blue)](https://central.sonatype.com/artifact/io.github.zakayothuku/web3-chucker)
+[![Android CI](https://github.com/zakayothuku/web3-chucker/actions/workflows/ci.yml/badge.svg)](https://github.com/zakayothuku/web3-chucker/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![Kotlin](https://img.shields.io/badge/Kotlin-2.0.0-purple.svg)](https://kotlinlang.org)
 [![Android](https://img.shields.io/badge/Android-MinSDK%2024-green.svg)](https://developer.android.com)
